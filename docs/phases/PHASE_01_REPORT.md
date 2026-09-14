@@ -4,7 +4,7 @@ Updated: 2026-09-14. Local runtime evidence: 2026-09-13. Governing scope: the ex
 
 ## Verdict
 
-**BLOCKED.** Local implementation and verification pass. Docker remains unavailable. The authorized GitHub repository is now configured and `main` was pushed successfully; successful remote CI execution is not yet evidenced. Git bootstrap is complete using the authenticated GitHub account identity. Neither remaining certification gate is waived. No outstanding local test failure or identified P0 architecture contradiction remains.
+**BLOCKED.** Local implementation and verification pass. Local Docker remains unavailable, so complete container runtime certification is outstanding. The authorized GitHub repository is configured, `main` was pushed successfully, and remote CI including production image builds passed for commit `d52446a9981c9d1d16acbb0088da5afb10ea574b`. Git bootstrap is complete using the authenticated GitHub account identity. The remaining container runtime gate is not waived; every later HEAD still requires its own successful CI run. A new full regression attempt observed a worker shutdown failure after Redis recovery; an immediate focused recovery rerun passed. This intermittent failure remains under investigation and is not waived. No P0 architecture contradiction was identified.
 
 ## Repository Before
 
@@ -32,7 +32,7 @@ A TypeScript pnpm modular monolith with independently runnable Next web/admin, N
 | PostgreSQL 15.19 | PASS: real isolated native service, fresh migrations, restricted runtime role, recovery/restore tests |
 | Redis 8.10.1 | PASS: real isolated native service, outage/reconnect and total queue-loss recovery |
 | Prisma 7.10.0 | PASS: generate, migration deploy/repeat and fresh client generation |
-| Docker/Compose | NOT RUN: multistage build/migration/nonroot app targets and private service configuration authored; Docker executable unavailable |
+| Docker/Compose | PASS for remote Compose configuration and all five production image builds; full application container runtime/security/recovery certification NOT RUN; local executable unavailable |
 
 No AWS resources were provisioned or deployments performed. Native macOS execution does not establish Linux container parity.
 
@@ -88,11 +88,11 @@ Loopback benchmark: 20 warmups, 200 samples per route, concurrency 5. Health p95
 | contracts | PASS: generated OpenAPI snapshot matches |
 | architecture documents | PASS: master traceability, domain/entity/event/state/phase consistency and local links; document validation does not claim runtime security certification |
 
-Environment: macOS arm64, Node 24.19.0, pnpm 11.24.0, Next 16.3.4, React 19.2.8, Nest 12.0.1, Prisma 7.10.0 and TypeScript 6.0.3. Final documentation-only edits were followed by document validation/mutation tests, format and secret checks; application source did not change after the passing runtime suite. The document mutation fixture was extended to copy test source so the new test-matrix links resolve inside isolated fixtures; its 12 checks then passed. Docker packaging remains unexecuted.
+Environment: macOS arm64, Node 24.19.0, pnpm 11.24.0, Next 16.3.4, React 19.2.8, Nest 12.0.1, Prisma 7.10.0 and TypeScript 6.0.3. Final documentation-only edits were followed by document validation/mutation tests, format and secret checks; application source did not change after the passing runtime suite. The document mutation fixture was extended to copy test source so the new test-matrix links resolve inside isolated fixtures; its 12 checks then passed. Docker packaging was subsequently executed successfully by remote CI; full container runtime certification remains outstanding.
 
 ## CI/CD
 
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) defines pinned Actions, pnpm caching/frozen install, PostgreSQL/Redis services, strict checks/build/tests/browser execution, production dependency audit, Compose validation/container builds and failure artifacts. Workflow exists: **PASS**. Remote success: **NOT RUN** pending observed execution. The user supplied and authorized the repository; initial `main` push succeeded on 2026-09-14. No repository discovery or deployment was performed. Container runtime/startup certification remains a separate missing gate even after a future successful build.
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) defines pinned Actions, pnpm caching/frozen install, PostgreSQL/Redis services, strict checks/build/tests/browser execution, production dependency audit, Compose validation/container builds and failure artifacts. Workflow exists: **PASS**. Remote success: **PASS** for [run 34807070950](https://github.com/Anubhav-bhatt/Dealith-/actions/runs/34807070950), commit `d52446a9981c9d1d16acbb0088da5afb10ea574b`; the `verify` job completed successfully with no mandatory check skipped. Failure-artifact upload was correctly skipped on success. The user supplied and authorized the repository; initial `main` push succeeded on 2026-09-14. No repository discovery or deployment was performed. Container runtime/startup certification remains a separate missing gate even after a future successful build.
 
 ## Files Created
 
@@ -111,8 +111,8 @@ Every exact path is listed in the [continuation file manifest](PHASE_01_FILE_MAN
 | Priority | Issue | Owner / next action |
 |---|---|---|
 | P0 | None identified in the current foundation scope | Preserve scope and architecture gates |
-| P1 | Remote CI success lacks execution evidence | Observe the workflow for the pushed HEAD and resolve any findings |
-| P1 | Docker build/runtime and Linux parity lack execution evidence | Platform engineer runs image builds, Compose startup, migrations/probes and shutdown on Docker-capable host |
+| P1 | Full Docker runtime/security/recovery certification lacks execution evidence | Image builds passed in Linux CI; run fresh Compose startup, migrations/probes, non-root checks, queue recovery and shutdown on a Docker-capable host |
+| P1 | Intermittent worker shutdown after Redis recovery | Investigate observed exit 1; focused rerun passed, but final regression/runtime certification is still required |
 | P2 | None identified as an unresolved local defect | Production workload/telemetry/backup measurements belong to later environment gates |
 | P3 | None identified | Routine dependency and documentation maintenance |
 
@@ -152,14 +152,14 @@ Every original section 71 item is retained. PASS means the bounded evidence abov
 | 28 | format check passes | PASS |
 | 29 | all apps build | PASS |
 | 30 | CI pipeline exists | PASS |
-| 31 | CI passes | NOT RUN |
+| 31 | CI passes | PASS: run 34807070950; later HEAD requires a new run |
 | 32 | README setup works | PASS |
 | 33 | fresh install verified | PASS |
 | 34 | secrets audit performed | PASS |
 | 35 | Phase 1 docs complete | PASS |
 | 36 | no P0/Critical defects | PASS: none identified |
 
-Additional mandatory section 52 gate: Docker image/runtime certification **NOT RUN**. Section 71 totals: **35 PASS, 0 FAIL, 1 NOT RUN**.
+Additional mandatory section 52 gate: Docker image/runtime certification **NOT RUN**. Section 71 totals at the cited certified commit: **36 PASS, 0 FAIL, 0 NOT RUN**. This does not waive the separate full container runtime gate or certify subsequent commits automatically.
 
 ## Validation Commands
 
@@ -182,21 +182,29 @@ git remote -v
 lsof -nP -iTCP:3400 -iTCP:3401 -iTCP:4400 -iTCP:4401 -sTCP:LISTEN
 ```
 
-The dev command was intentionally stopped with Ctrl-C after checks; `lsof` returned no listeners (exit 1). Local `git remote -v` returned no configured remote and did not discover or contact a hosting service. `command -v docker` returned no executable. An initial offline clean-install metadata failure and sandbox socket restrictions were resolved by the final isolated registry install and authorized local listener execution; only final runs certify acceptance. Source hash comparison confirmed the exact manifest and preserved master/schema/migration. No remote CI or Docker command is represented as a successful execution.
+The dev command was intentionally stopped with Ctrl-C after checks; `lsof` returned no listeners (exit 1). Local `git remote -v` returned no configured remote and did not discover or contact a hosting service. `command -v docker` returned no executable. An initial offline clean-install metadata failure and sandbox socket restrictions were resolved by the final isolated registry install and authorized local listener execution; only final runs certify acceptance. Source hash comparison confirmed the exact manifest and preserved master/schema/migration. The earlier local attempt did not execute remote CI or Docker; subsequent actual remote evidence is recorded below.
 
 ## Phase 1C Certification Attempt
 
 The Phase 1C request authorizes safe initial Git bootstrap and Docker/remote CI certification only. Existing local results above remain authoritative; no Phase 2 implementation was added.
 
-`docker --version`, `docker compose version` and `docker info` each failed with command not found (exit 127). Standard local Docker executable locations were also absent. **Docker runtime certification BLOCKED — Docker unavailable.** No images were built, no containers were started, and container runtime users, migrations, probes, queue processing, failure recovery and shutdown remain NOT RUN. No native result is substituted for container evidence.
+`docker --version`, `docker compose version` and `docker info` each failed with command not found (exit 127). Standard local Docker executable locations were also absent. **Docker runtime certification BLOCKED — Docker unavailable.** That local attempt built no images and started no containers. Subsequent GitHub CI built the five production images and ran PostgreSQL/Redis service containers; application container runtime users, fresh Compose migrations/probes, queue processing, failure recovery and shutdown remain NOT RUN. No native result is substituted for container evidence.
 
-On 2026-09-14 the user supplied `https://github.com/Anubhav-bhatt/Dealith-.git` and explicitly authorized the push. The remote was reachable and empty. GitHub CLI authenticated as `Anubhav-bhatt`; repository-local commit identity uses that account's returned name and ID-based GitHub no-reply email. The reviewed initial commit `129fa03e4496ceadb60435fec8ecdb5f9f35576b` was created and `git push -u origin main` succeeded without force. Workflow `Local foundation checks` started as [run 34807023464](https://github.com/Anubhav-bhatt/Dealith-/actions/runs/34807023464), evaluating initial commit `129fa03e4496ceadb60435fec8ecdb5f9f35576b`. Its observed status is IN_PROGRESS; remote success remains NOT RUN until actual successful completion is recorded. The subsequent report commit requires its own run.
+On 2026-09-14 the user supplied `https://github.com/Anubhav-bhatt/Dealith-.git` and explicitly authorized the push. The remote was reachable and empty. GitHub CLI authenticated as `Anubhav-bhatt`; repository-local commit identity uses that account's returned name and ID-based GitHub no-reply email. The reviewed initial commit `129fa03e4496ceadb60435fec8ecdb5f9f35576b` was created and `git push -u origin main` succeeded without force. Workflow `Local foundation checks` passed as [run 34807070950](https://github.com/Anubhav-bhatt/Dealith-/actions/runs/34807070950), evaluating `d52446a9981c9d1d16acbb0088da5afb10ea574b`. The `verify` job completed successfully, including frozen installation, browser setup, the entire `pnpm check:ci` chain, production advisory scan, Compose configuration and actual image builds. Built images: `dealith-local:api`, `dealith-local:worker`, `dealith-local:web`, `dealith-local:admin`, `dealith-local:migration`. GitHub ran this on Linux with real PostgreSQL/Redis service containers. These are build/CI results; the workflow does not start the full application Compose stack or establish its runtime users, migration order, recovery or graceful shutdown. The report-only follow-up commit must receive its own successful run; final HEAD/run evidence is available in the repository's [Actions history](https://github.com/Anubhav-bhatt/Dealith-/actions).
 
 Pre-commit safety review added missing log/swap/OS and per-user IDE artifact exclusions to `.gitignore`, retained intentional source/migrations/lockfile/environment example, and removed one personal absolute path from the historical repository inventory. The existing secret scan passed; local database credentials in examples/Compose/CI are synthetic. The original continuation file manifest is a historical record; Phase 1C additionally changes `.gitignore`, `docs/REPOSITORY_INVENTORY.md`, this report, the plan, test matrix and changelog.
 
 Phase 1C final regression: `pnpm verify` exited 0 after the safety/documentation changes. Format, lint, strict types, all builds, API snapshot, 12 document mutation tests, 3 supervisor tests, 11 unit tests, 2 component tests, 7 API contract tests, 10 integration tests (including 1 API E2E), 12 browser tests and all five native recovery smoke stages passed. No application runtime source changed. The final report-only update was checked with `pnpm docs:check` and `pnpm security:scan` before restaging.
 
 `git diff --cached --check` reports only pre-existing Markdown hard-break spaces in the immutable master scope. The same check excluding that single file passes; the master checksum remains unchanged. The staged content review covered all 212 files and found no credential signatures, personal absolute paths or accidentally included generated/dependency/test artifacts. `.env.example`, migrations, lockfile and intended source are staged; private environment files and outputs remain ignored. The first safety-review attempt had no commit or remote; those prerequisites were resolved by the authorized 2026-09-14 Git bootstrap recorded below.
+
+## Container Runtime Certification Extension
+
+The GitHub runner provides a usable local Linux Docker engine even while the workstation has no Docker executable. The mandatory workflow now invokes `pnpm test:docker` using [docker-certify.mjs](../../tools/docker-certify.mjs) after all five image builds. This extension is pending its first actual run; prior build success does not certify it.
+
+The harness refuses remote Docker endpoints, creates a unique Compose project, uses the repository's real production images and synthetic loopback services, checks fresh/repeated migrations, external probes, hydrated web/admin, actual process UIDs and correlated harmless outbox jobs. A bounded database table lock creates a real transient consumer failure without schema changes. Only that project's Redis is flushed for queue-loss replay; the operational retry eligibility timestamp is advanced to avoid an unnecessary 30-second delay. It tests dependency/API/worker restart and full shutdown/restart, verifies no application DB sessions remain, and removes only its own project/volumes. `test-results/foundation/docker-certification.json` records the evaluated commit, engine versions, container/image IDs and individual check outcomes; CI retains the evidence artifact on success or failure. The harness enables the actual telemetry SDK without an external collector so process shutdown exercises SDK closure.
+
+Changes in this extension are limited to certification tooling, the root test script, CI and this report/test matrix. No product or application runtime code changed. The first local full regression passed all layers through browser tests but failed the worker shutdown assertion in recovery smoke. A focused rerun passed all five smoke stages. Further regression and actual remote execution are required before any final PASS; the intermittent shutdown finding remains open until resolved.
 
 ## Git
 
@@ -208,7 +216,7 @@ Branch: `main`, tracking `origin/main`. Remote: `https://github.com/Anubhav-bhat
 |---|---|
 | Local Phase 1 checks remain green | PASS: Phase 1C `pnpm verify` exited 0 |
 | Docker available | BLOCKED |
-| Production images build | NOT RUN |
+| Production images build | PASS: remote CI built all five targets |
 | Containers run | NOT RUN |
 | Migration works in container environment | NOT RUN |
 | API health works in container environment | NOT RUN |
@@ -221,13 +229,13 @@ Branch: `main`, tracking `origin/main`. Remote: `https://github.com/Anubhav-bhat
 | Linux/container parity validated | NOT RUN |
 | Repository safely committed | PASS: reviewed initial commit created |
 | Authorized remote configured | PASS |
-| main pushed | PASS: initial commit pushed; final documentation HEAD must also be pushed |
-| Real remote CI run executed | NOT RUN |
-| Remote CI green | NOT RUN |
+| main pushed | PASS: foundation and report commits pushed; each later report commit is pushed normally |
+| Real remote CI run executed | PASS: run 34807070950 |
+| Remote CI green | PASS for cited commit; recheck each subsequent HEAD |
 | No P0/Critical issues | PASS: none identified |
 | Phase 1 report updated | PASS |
 | Git state clean | PASS after initial push; recheck after committing this report |
 
 ## Next Phase
 
-Phase 2 — Identity & Organizations is **not cleared to begin** under the full Phase 1 gate. Complete Docker execution and remote CI certification, resolve any findings and update this verdict to PASS first. The repository is now supplied and pushed; Docker execution and successful CI for final HEAD are still required.
+Phase 2 — Identity & Organizations is **not cleared to begin** under the full Phase 1 gate. Complete Docker execution and remote CI certification, resolve any findings and update this verdict to PASS first. The repository is supplied and pushed and remote CI has passed. Full container runtime execution remains required, together with successful CI for any final subsequent HEAD.

@@ -48,7 +48,8 @@
     "infra:down": "node tools/infra.mjs down",
     "test:benchmark": "node tools/benchmark.mjs",
     "test:clean-install": "node tools/clean-install.mjs",
-    "security:scan": "node tools/secret-scan.mjs"
+    "security:scan": "node tools/secret-scan.mjs",
+    "test:docker": "node tools/docker-certify.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",
