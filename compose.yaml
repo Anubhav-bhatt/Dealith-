@@ -1,0 +1,95 @@
+name: dealith-local
+x-app: &app
+  init: true
+  environment: &environment
+    APP_ENV: local
+    DATABASE_URL: postgresql://dealith_app:dealith_app_local@postgres:5432/dealith
+    REDIS_URL: redis://redis:6379
+    QUEUE_PREFIX: dealith_local
+    API_HOST: 0.0.0.0
+    API_PORT: '4000'
+    WORKER_HOST: 0.0.0.0
+    WORKER_PORT: '4001'
+    APP_HOST: 0.0.0.0
+    API_INTERNAL_ORIGIN: http://api:4000
+    WORKER_INTERNAL_ORIGIN: http://worker:4001
+    WEB_ORIGIN: http://localhost:3000
+    ADMIN_ORIGIN: http://localhost:3001
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+services:
+  postgres:
+    image: postgres:15.19
+    environment:
+      POSTGRES_USER: dealith_migrator
+      POSTGRES_PASSWORD: dealith_migrator_local
+      POSTGRES_DB: dealith
+    ports: ['127.0.0.1:54329:5432']
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/local/init-db.sql:/docker-entrypoint-initdb.d/01-runtime-role.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dealith_migrator -d dealith']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:8.10.1
+    command: ['redis-server', '--appendonly', 'yes']
+    ports: ['127.0.0.1:56379:6379']
+    volumes: ['redis-data:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  migrate:
+    build:
+      context: .
+      target: migration
+    image: dealith-local:migration
+    environment:
+      APP_ENV: local
+      MIGRATION_DATABASE_URL: postgresql://dealith_migrator:dealith_migrator_local@postgres:5432/dealith
+    command: ['sh', '-c', 'pnpm db:migrate && node tools/grant-local-runtime.mjs']
+    depends_on:
+      postgres:
+        condition: service_healthy
+  api:
+    <<: *app
+    build:
+      context: .
+      target: api
+    image: dealith-local:api
+    command: ['node', 'dist/main.js']
+    ports: ['127.0.0.1:4000:4000']
+  worker:
+    <<: *app
+    build:
+      context: .
+      target: worker
+    image: dealith-local:worker
+    command: ['node', 'dist/main.js']
+    ports: ['127.0.0.1:4001:4001']
+  web:
+    <<: *app
+    build:
+      context: .
+      target: web
+    image: dealith-local:web
+    command: ['node', 'apps/web/server.js']
+    ports: ['127.0.0.1:3000:3000']
+  admin:
+    <<: *app
+    build:
+      context: .
+      target: admin
+    image: dealith-local:admin
+    command: ['node', 'apps/admin/server.js']
+    ports: ['127.0.0.1:3001:3001']
+volumes:
+  postgres-data:
+  redis-data:

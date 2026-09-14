@@ -1,0 +1,27 @@
+# Phase 01 test matrix
+
+Date: 2026-09-13. Actual continuation results; [report](PHASE_01_REPORT.md) contains the unchanged full 36-item acceptance checklist. Runtime tests use synthetic isolated data. No marketplace E2E is claimed.
+
+| ID | Requirement | Level / test file or tool | Status | Evidence |
+|---|---|---|---|---|
+| P1-T01 | P1-001/P1-005 config fails safely, separate origins/ports, public values, TLS, CORS/OTel flags | Unit: [config.test.ts](../../tests/unit/config.test.ts) | PASS | Included in 11 passing unit cases; malformed credential-bearing URLs expose field names only |
+| P1-T02 | P1-003/P1-005 safe error categories and secret-free metadata | Unit: [errors.test.ts](../../tests/unit/errors.test.ts), [events-security.test.ts](../../tests/unit/events-security.test.ts) | PASS | HTTP/parser table, unknown failure masking, event forgery and unsafe log fields |
+| P1-T03 | P1-005 real trace/metric export and structured logging | Unit with local OTLP HTTP sink: [telemetry.test.ts](../../tests/unit/telemetry.test.ts) | PASS | Correlated HTTP/database/queue/Redis spans, duration metrics, severity/environment and content exclusion |
+| P1-T04 | P1-002 native control/link semantics | Component: [ui.test.tsx](../../tests/component/ui.test.tsx) | PASS | 2 cases; disabled action and native links |
+| P1-T05 | P1-003 canonical/alias routes, CORS, headers, errors and no business routes | Assembled HTTP API: [health.test.ts](../../tests/contract/health.test.ts) | PASS | 7 cases; liveness independent, readiness fail closed, version safe, malformed/oversized JSON, exact origins |
+| P1-T06 | P1-004 atomic audit/outbox, runtime grants, concurrency, retries, queue loss/replay | Real PostgreSQL/Redis: [outbox.test.ts](../../tests/integration/outbox.test.ts) | PASS | 9 cases; migrated isolated DB, one effect under concurrent delivery, retained failure and replay |
+| P1-T07 | P1-003/P1-004 HTTP with real dependencies | API E2E: [api.test.ts](../../tests/integration/api.test.ts) | PASS | 1 case with live health/readiness/version, 404 and malformed request assertions; total integration 10 |
+| P1-T08 | P1-002/P1-007 actual browser API integration, mobile, keyboard, axe, failures | Playwright: [foundation.spec.ts](../../tests/e2e/foundation.spec.ts), [browser-server.mjs](../../tools/browser-server.mjs) | PASS | 12 cases: six flows on desktop/mobile Chromium; no skips; axe checks on both surfaces |
+| P1-T09 | P1-002/P1-004 supervisor and graceful cleanup | Node: [test-dev.mjs](../../tools/test-dev.mjs) | PASS | 3 cases: child exits 0/23 and repeated Ctrl-C; process trees stopped |
+| P1-T10 | P1-001 architecture, formatting, strict types, API snapshot and builds | pnpm docs:check/docs:test/format:check/lint/typecheck/build/contracts:check | PASS | All 16 app/package projects built and typechecked; 12 document checker mutation tests |
+| P1-T11 | P1-004 fresh migration, four production processes, dependency restart and restore | [smoke.mjs](../../tools/smoke.mjs) | PASS | Real 503 outage + live probes; worker restart after Redis queue loss; one effect; restore to separate migrated DB; shutdown |
+| P1-T12 | P1-007 mandatory fresh source install | [clean-install.mjs](../../tools/clean-install.mjs) | PASS | Frozen registry install with new package store/metadata cache, no copied node_modules/client/build; fresh build/test/browser/smoke; isolated resources removed |
+| P1-T13 | P1-007 health performance baseline | [benchmark.mjs](../../tools/benchmark.mjs) | PASS | 200 samples each, concurrency 5, 20 warmups; health p95 2.19 ms, readiness p95 3.94 ms, 0 failed requests; loopback only |
+| P1-T14 | P1-008 secrets/dependency review | [secret-scan.mjs](../../tools/secret-scan.mjs), pnpm audit --prod --audit-level=high, manual config review | PASS | No credential/path signature findings; synthetic fixture credentials identified; patched Multer override; audit found no known vulnerabilities |
+| P1-T15 | P1-006 README startup | LOCAL_PORT_BASE=3400 pnpm dev:local; live fetch and Chromium probes | PASS | Four dev processes; both pages/API/worker proxies returned 200; real browser statuses; Ctrl-C cleanup checked |
+| P1-T16 | P1-006 Docker/Compose builds/runtime | [Dockerfile](../../Dockerfile), [compose.yaml](../../compose.yaml) | NOT RUN | Docker absent; authored multistage/nonroot targets are not certified container executions |
+| P1-T17 | P1-006 CI workflow and remote success | [ci.yml](../../.github/workflows/ci.yml) | NOT RUN for remote result | Workflow authored with service containers/build/tests/audit/container gates; Phase 1C allows a push to an authorized URL, but no URL is supplied and no remote run exists |
+
+The first offline clean-install attempt failed due to missing pnpm security-policy metadata. It was replaced by a true isolated registry install; final clean run passed. An early sandboxed listener run failed with EPERM and was rerun with authorized local listener permissions. A production audit discovered Multer vulnerabilities; the scoped 2.3.0 override was installed and the final audit passed. A temporary approval-service usage failure delayed that final audit but is no longer a pending blocker.
+
+Phase 1C rechecked Docker: version/Compose/info all returned command not found. No Docker execution evidence exists. Repository safety review adds log/editor ignores and removes the historical personal root path. Final regression and Git bootstrap results are recorded in the canonical report.

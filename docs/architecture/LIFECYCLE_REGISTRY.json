@@ -1,0 +1,1784 @@
+{
+  "project": {
+    "states": [
+      "DRAFT",
+      "INCOMPLETE",
+      "READY_FOR_REVIEW",
+      "SUBMITTED",
+      "UNDER_REVIEW",
+      "CHANGES_REQUESTED",
+      "APPROVED",
+      "SCHEDULED",
+      "PUBLISHED",
+      "PAUSED",
+      "UNDER_OFFER",
+      "DEAL_IN_PROGRESS",
+      "SOLD",
+      "WITHDRAWN",
+      "REJECTED",
+      "SUSPENDED",
+      "ARCHIVED"
+    ],
+    "initial": "DRAFT",
+    "creation": {
+      "actor": "owner",
+      "permission": "project.create",
+      "guard": "Authenticated verified-email owner or authorized organization member; draft ownership fixed; project type allowed.",
+      "events": [
+        "project.created"
+      ]
+    },
+    "edges": [
+      {
+        "id": "P001",
+        "source": "DRAFT",
+        "target": "INCOMPLETE",
+        "actor": "owner",
+        "permission": "project.edit",
+        "guard": "Readiness assessment fails required asset/stage/deal-type fields.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P002",
+        "source": "DRAFT",
+        "target": "READY_FOR_REVIEW",
+        "actor": "owner",
+        "permission": "project.edit",
+        "guard": "Version passes complete readiness assessment; evidence requirements present.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P003",
+        "source": "INCOMPLETE",
+        "target": "READY_FOR_REVIEW",
+        "actor": "owner",
+        "permission": "project.edit",
+        "guard": "All blocking readiness findings resolved on current version.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P004",
+        "source": "READY_FOR_REVIEW",
+        "target": "INCOMPLETE",
+        "actor": "owner/system",
+        "permission": "project.edit",
+        "guard": "An edit or expired evidence invalidates readiness; capture reasons.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P005",
+        "source": "READY_FOR_REVIEW",
+        "target": "SUBMITTED",
+        "actor": "owner",
+        "permission": "project.submit",
+        "guard": "Verified ownership and submitter authority; immutable revision submitted; prohibited-listing checks pass.",
+        "events": [
+          "project.transitioned",
+          "project.submitted"
+        ]
+      },
+      {
+        "id": "P006",
+        "source": "SUBMITTED",
+        "target": "UNDER_REVIEW",
+        "actor": "review analyst",
+        "permission": "project.review",
+        "guard": "Reviewer assigned; no self-review; submitted revision hash matches.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P007",
+        "source": "UNDER_REVIEW",
+        "target": "CHANGES_REQUESTED",
+        "actor": "review analyst",
+        "permission": "project.review",
+        "guard": "Specific correction reasons and affected fields recorded.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P008",
+        "source": "CHANGES_REQUESTED",
+        "target": "INCOMPLETE",
+        "actor": "owner",
+        "permission": "project.edit",
+        "guard": "Open correction revision; previous review remains immutable.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P009",
+        "source": "CHANGES_REQUESTED",
+        "target": "READY_FOR_REVIEW",
+        "actor": "owner",
+        "permission": "project.edit",
+        "guard": "Corrected revision satisfies all requested changes and readiness.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P010",
+        "source": "UNDER_REVIEW",
+        "target": "APPROVED",
+        "actor": "review analyst",
+        "permission": "project.approve",
+        "guard": "Ownership verified; current evidence; moderation and jurisdiction eligibility; immutable approved revision.",
+        "events": [
+          "project.transitioned",
+          "project.approved"
+        ]
+      },
+      {
+        "id": "P011",
+        "source": "UNDER_REVIEW",
+        "target": "REJECTED",
+        "actor": "review analyst",
+        "permission": "project.reject",
+        "guard": "Reason and evidence recorded; appeal path disclosed.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P012",
+        "source": "APPROVED",
+        "target": "SCHEDULED",
+        "actor": "owner",
+        "permission": "project.publish",
+        "guard": "Valid future UTC publication time; approval/evidence current.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P013",
+        "source": "APPROVED",
+        "target": "PUBLISHED",
+        "actor": "owner",
+        "permission": "project.publish",
+        "guard": "Publish exact approved revision; eligibility and evidence rechecked.",
+        "events": [
+          "project.transitioned",
+          "project.published"
+        ]
+      },
+      {
+        "id": "P014",
+        "source": "SCHEDULED",
+        "target": "PUBLISHED",
+        "actor": "scheduler",
+        "permission": "project.publish.scheduled",
+        "guard": "Scheduled time reached; unchanged approved revision; live flags, owner authority and eligibility still valid.",
+        "events": [
+          "project.transitioned",
+          "project.published"
+        ]
+      },
+      {
+        "id": "P015",
+        "source": "SCHEDULED",
+        "target": "APPROVED",
+        "actor": "owner",
+        "permission": "project.schedule.cancel",
+        "guard": "Cancel schedule before publication.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P016",
+        "source": "APPROVED",
+        "target": "INCOMPLETE",
+        "actor": "owner/system",
+        "permission": "project.edit",
+        "guard": "Material prepublication edit or evidence expiry invalidates approval.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P017",
+        "source": "SCHEDULED",
+        "target": "INCOMPLETE",
+        "actor": "owner/system",
+        "permission": "project.edit",
+        "guard": "Material change or eligibility expiry invalidates scheduled approval.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P018",
+        "source": "PUBLISHED",
+        "target": "PAUSED",
+        "actor": "owner/system",
+        "permission": "project.pause",
+        "guard": "Owner pause or non-fraud evidence expiry; public projection revoked.",
+        "events": [
+          "project.transitioned",
+          "project.paused"
+        ]
+      },
+      {
+        "id": "P019",
+        "source": "PAUSED",
+        "target": "PUBLISHED",
+        "actor": "owner",
+        "permission": "project.publish",
+        "guard": "Current approved revision and ownership eligibility; no reservation, suspension or risk block.",
+        "events": [
+          "project.transitioned",
+          "project.published"
+        ]
+      },
+      {
+        "id": "P020",
+        "source": "PAUSED",
+        "target": "INCOMPLETE",
+        "actor": "owner",
+        "permission": "project.edit",
+        "guard": "Owner elects to replace approved listing; new revision requires review.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P021",
+        "source": "PUBLISHED",
+        "target": "UNDER_OFFER",
+        "actor": "Deals coordinator",
+        "permission": "project.reserve",
+        "guard": "Exclusive OfferRevision accepted through Offer/Deal services; acquire unique active rights reservation atomically.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P022",
+        "source": "UNDER_OFFER",
+        "target": "DEAL_IN_PROGRESS",
+        "actor": "Deals coordinator",
+        "permission": "project.commit",
+        "guard": "Reserved deal has fully signed matching agreement and no risk block.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P023",
+        "source": "UNDER_OFFER",
+        "target": "PUBLISHED",
+        "actor": "Deals coordinator",
+        "permission": "project.reservation.release",
+        "guard": "Reservation ended; no binding obligations or unresolved funds; listing approval still valid.",
+        "events": [
+          "project.transitioned",
+          "project.published"
+        ]
+      },
+      {
+        "id": "P024",
+        "source": "UNDER_OFFER",
+        "target": "PAUSED",
+        "actor": "Deals coordinator/owner",
+        "permission": "project.pause",
+        "guard": "Pause discovery without cancelling accepted offer, reservation, or existing deal.",
+        "events": [
+          "project.transitioned",
+          "project.paused"
+        ]
+      },
+      {
+        "id": "P025",
+        "source": "DEAL_IN_PROGRESS",
+        "target": "SOLD",
+        "actor": "completion coordinator",
+        "permission": "project.complete",
+        "guard": "Dispositional acquisition closed; settlement final; mandatory transfer and inspection confirmed; reservation belongs to closing deal.",
+        "events": [
+          "project.transitioned",
+          "project.sold"
+        ]
+      },
+      {
+        "id": "P026",
+        "source": "DEAL_IN_PROGRESS",
+        "target": "PUBLISHED",
+        "actor": "completion coordinator",
+        "permission": "project.reservation.release",
+        "guard": "Deal lawfully terminated with funds/rights resolved, or time-bound exclusive license reservation ended; original owner still has listing rights; current approval.",
+        "events": [
+          "project.transitioned",
+          "project.published"
+        ]
+      },
+      {
+        "id": "P027",
+        "source": "DEAL_IN_PROGRESS",
+        "target": "PAUSED",
+        "actor": "completion coordinator",
+        "permission": "project.pause",
+        "guard": "Funds/rights resolved but listing requires revalidation before discoverability.",
+        "events": [
+          "project.transitioned",
+          "project.paused"
+        ]
+      },
+      {
+        "id": "P028",
+        "source": "PAUSED",
+        "target": "DEAL_IN_PROGRESS",
+        "actor": "Deals coordinator",
+        "permission": "project.commit",
+        "guard": "Existing reservation for accepted deal; matching agreement fully signed; pause was discoverability-only.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P029",
+        "source": "PAUSED",
+        "target": "SOLD",
+        "actor": "completion coordinator",
+        "permission": "project.complete",
+        "guard": "Deal closed with verified final settlement and dispositional transfer; this paused listing retains matching reservation.",
+        "events": [
+          "project.transitioned",
+          "project.sold"
+        ]
+      },
+      {
+        "id": "P030",
+        "source": "DRAFT",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P031",
+        "source": "INCOMPLETE",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P032",
+        "source": "READY_FOR_REVIEW",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P033",
+        "source": "SUBMITTED",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P034",
+        "source": "UNDER_REVIEW",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P035",
+        "source": "CHANGES_REQUESTED",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P036",
+        "source": "APPROVED",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P037",
+        "source": "SCHEDULED",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P038",
+        "source": "PUBLISHED",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P039",
+        "source": "PAUSED",
+        "target": "WITHDRAWN",
+        "actor": "owner",
+        "permission": "project.withdraw",
+        "guard": "No active rights reservation, binding deal obligation or unresolved transfer; preserve historical deal access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P040",
+        "source": "REJECTED",
+        "target": "INCOMPLETE",
+        "actor": "owner with review authorization",
+        "permission": "project.appeal.revise",
+        "guard": "Accepted appeal permits a new revision; original rejection remains.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P041",
+        "source": "WITHDRAWN",
+        "target": "INCOMPLETE",
+        "actor": "owner",
+        "permission": "project.relist",
+        "guard": "Ownership current; no conflicting disposition; a new review is required.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P042",
+        "source": "SUBMITTED",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P043",
+        "source": "UNDER_REVIEW",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P044",
+        "source": "CHANGES_REQUESTED",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P045",
+        "source": "APPROVED",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P046",
+        "source": "SCHEDULED",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P047",
+        "source": "PUBLISHED",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P048",
+        "source": "PAUSED",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P049",
+        "source": "UNDER_OFFER",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P050",
+        "source": "DEAL_IN_PROGRESS",
+        "target": "SUSPENDED",
+        "actor": "compliance/moderator",
+        "permission": "project.suspend",
+        "guard": "Reason and case recorded; block new discovery and sensitive commands; preserve deals, financial truth and review access.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P051",
+        "source": "SUSPENDED",
+        "target": "PAUSED",
+        "actor": "compliance/moderator",
+        "permission": "project.reinstate",
+        "guard": "Case resolution and independent approval; default no public exposure; active reservation retained.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P052",
+        "source": "SUSPENDED",
+        "target": "REJECTED",
+        "actor": "compliance/moderator",
+        "permission": "project.reject",
+        "guard": "Confirmed prohibition; no automatic cancellation of deals or funds; supervised resolution required.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P053",
+        "source": "SOLD",
+        "target": "ARCHIVED",
+        "actor": "owner/retention worker",
+        "permission": "project.archive",
+        "guard": "No open dispute, legal hold conflict, or unresolved obligation; archive visibility only; immutable history retained.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P054",
+        "source": "WITHDRAWN",
+        "target": "ARCHIVED",
+        "actor": "owner/retention worker",
+        "permission": "project.archive",
+        "guard": "No open dispute, legal hold conflict, or unresolved obligation; archive visibility only; immutable history retained.",
+        "events": [
+          "project.transitioned"
+        ]
+      },
+      {
+        "id": "P055",
+        "source": "REJECTED",
+        "target": "ARCHIVED",
+        "actor": "owner/retention worker",
+        "permission": "project.archive",
+        "guard": "No open dispute, legal hold conflict, or unresolved obligation; archive visibility only; immutable history retained.",
+        "events": [
+          "project.transitioned"
+        ]
+      }
+    ]
+  },
+  "deal": {
+    "states": [
+      "INQUIRY",
+      "ACCESS_REQUESTED",
+      "ACCESS_APPROVED",
+      "NDA_REQUIRED",
+      "NDA_SIGNED",
+      "DISCUSSION",
+      "OFFER_SUBMITTED",
+      "NEGOTIATION",
+      "OFFER_ACCEPTED",
+      "LOI_PENDING",
+      "LOI_SIGNED",
+      "DUE_DILIGENCE",
+      "AGREEMENT_PENDING",
+      "AGREEMENT_SIGNED",
+      "SETTLEMENT_PENDING",
+      "ESCROW_PENDING",
+      "ESCROW_FUNDED",
+      "ASSET_TRANSFER",
+      "INSPECTION",
+      "RELEASE_PENDING",
+      "SETTLED",
+      "CLOSED",
+      "REJECTED",
+      "WITHDRAWN",
+      "EXPIRED",
+      "CANCELLED",
+      "DISPUTED",
+      "FAILED"
+    ],
+    "initial": "INQUIRY",
+    "creation": {
+      "actor": "eligible buyer/seller initiator",
+      "permission": "deal.create",
+      "guard": "Single project and one chosen deal type, identified buyer/seller principals, current project eligibility; idempotent creation; active participants only.",
+      "events": [
+        "deal.created"
+      ]
+    },
+    "edges": [
+      {
+        "id": "D001",
+        "source": "INQUIRY",
+        "target": "ACCESS_REQUESTED",
+        "actor": "requester",
+        "permission": "access.request",
+        "guard": "Eligible authenticated requester, buyer-side authority, intended deal type and requested categories; project accepts inquiry.",
+        "events": [
+          "deal.transitioned",
+          "access.requested"
+        ]
+      },
+      {
+        "id": "D002",
+        "source": "ACCESS_REQUESTED",
+        "target": "ACCESS_APPROVED",
+        "actor": "seller owner",
+        "permission": "access.approve",
+        "guard": "Owner authority and buyer eligibility; AccessDecision and partial/full AccessGrant scope/version recorded.",
+        "events": [
+          "deal.transitioned",
+          "access.approved"
+        ]
+      },
+      {
+        "id": "D003",
+        "source": "ACCESS_APPROVED",
+        "target": "NDA_REQUIRED",
+        "actor": "policy coordinator",
+        "permission": "nda.require",
+        "guard": "DealTypePolicy or any approved category requires NDA; no protected bytes released.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D004",
+        "source": "ACCESS_APPROVED",
+        "target": "DISCUSSION",
+        "actor": "policy coordinator",
+        "permission": "deal.discuss",
+        "guard": "Recorded policy permits NDA-free discussion and requested categories; never skips a document-level NDA.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D005",
+        "source": "NDA_REQUIRED",
+        "target": "NDA_SIGNED",
+        "actor": "signature adapter worker",
+        "permission": "nda.confirm",
+        "guard": "Verified provider receipt for immutable NdaVersion; every required signer; correct identities, hash and expiry.",
+        "events": [
+          "deal.transitioned",
+          "nda.signed"
+        ]
+      },
+      {
+        "id": "D006",
+        "source": "NDA_SIGNED",
+        "target": "DISCUSSION",
+        "actor": "participant",
+        "permission": "deal.discuss",
+        "guard": "Current grant and NDA valid; sender is active participant.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D007",
+        "source": "DISCUSSION",
+        "target": "OFFER_SUBMITTED",
+        "actor": "buyer negotiator",
+        "permission": "offer.submit",
+        "guard": "Immutable current OfferRevision complete, lawful type/currency, positive precise amount and future expiry.",
+        "events": [
+          "deal.transitioned",
+          "offer.submitted"
+        ]
+      },
+      {
+        "id": "D008",
+        "source": "OFFER_SUBMITTED",
+        "target": "NEGOTIATION",
+        "actor": "counterparty negotiator",
+        "permission": "offer.counter",
+        "guard": "Counter creates new OfferRevision linked to current head; optimistic concurrency, terms complete.",
+        "events": [
+          "deal.transitioned",
+          "offer.countered"
+        ]
+      },
+      {
+        "id": "D009",
+        "source": "OFFER_SUBMITTED",
+        "target": "OFFER_ACCEPTED",
+        "actor": "receiving authorized signatory",
+        "permission": "offer.accept",
+        "guard": "Accept current unexpired revision exactly; signer authority; both parties eligible; acquire exclusive ProjectReservation if type requires.",
+        "events": [
+          "deal.transitioned",
+          "offer.accepted"
+        ]
+      },
+      {
+        "id": "D010",
+        "source": "NEGOTIATION",
+        "target": "OFFER_ACCEPTED",
+        "actor": "receiving authorized signatory",
+        "permission": "offer.accept",
+        "guard": "Current counter revision, unexpired, offered by opposite side; snapshot accepted; exclusive reservation serialized.",
+        "events": [
+          "deal.transitioned",
+          "offer.accepted"
+        ]
+      },
+      {
+        "id": "D011",
+        "source": "OFFER_SUBMITTED",
+        "target": "DISCUSSION",
+        "actor": "buyer/recipient/expiry worker",
+        "permission": "offer.end",
+        "guard": "Current offer rejected, withdrawn or expired; no accepted commitment; preserve revision history.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D012",
+        "source": "NEGOTIATION",
+        "target": "DISCUSSION",
+        "actor": "negotiators/expiry worker",
+        "permission": "offer.end",
+        "guard": "All current negotiations ended without accepted offer; offer history preserved.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D013",
+        "source": "OFFER_ACCEPTED",
+        "target": "LOI_PENDING",
+        "actor": "authorized signatories",
+        "permission": "loi.prepare",
+        "guard": "DealTypePolicy requires LOI; exact accepted offer and current parties referenced.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D014",
+        "source": "OFFER_ACCEPTED",
+        "target": "DUE_DILIGENCE",
+        "actor": "authorized signatories",
+        "permission": "diligence.start",
+        "guard": "DealTypePolicy explicitly waives LOI; both authorized parties acknowledge; versioned plan created.",
+        "events": [
+          "deal.transitioned",
+          "diligence.started"
+        ]
+      },
+      {
+        "id": "D015",
+        "source": "LOI_PENDING",
+        "target": "LOI_SIGNED",
+        "actor": "signature adapter worker",
+        "permission": "loi.confirm",
+        "guard": "Provider-confirmed signatures on same immutable LOI version from every required signer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D016",
+        "source": "LOI_SIGNED",
+        "target": "DUE_DILIGENCE",
+        "actor": "authorized participants",
+        "permission": "diligence.start",
+        "guard": "Versioned plan from approved template; acceptance of obligations; scoped assignees.",
+        "events": [
+          "deal.transitioned",
+          "diligence.started"
+        ]
+      },
+      {
+        "id": "D017",
+        "source": "DUE_DILIGENCE",
+        "target": "AGREEMENT_PENDING",
+        "actor": "both authorized signatories",
+        "permission": "agreement.prepare",
+        "guard": "Every mandatory task PASSED or authorized WAIVED/NOT_APPLICABLE with reasons; no unresolved blocking risk; plan review approved.",
+        "events": [
+          "deal.transitioned",
+          "diligence.completed"
+        ]
+      },
+      {
+        "id": "D018",
+        "source": "AGREEMENT_PENDING",
+        "target": "DUE_DILIGENCE",
+        "actor": "both authorized signatories",
+        "permission": "diligence.reopen",
+        "guard": "Material issue found; supersede unsigned agreement version; reopen affected tasks and preserve reviews.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D019",
+        "source": "AGREEMENT_PENDING",
+        "target": "AGREEMENT_SIGNED",
+        "actor": "signature adapter worker",
+        "permission": "agreement.confirm",
+        "guard": "All required provider signatures verify against exact approved AgreementVersion hash; eligibility rechecked.",
+        "events": [
+          "deal.transitioned",
+          "agreement.signed"
+        ]
+      },
+      {
+        "id": "D020",
+        "source": "AGREEMENT_SIGNED",
+        "target": "SETTLEMENT_PENDING",
+        "actor": "settlement coordinator",
+        "permission": "settlement.create",
+        "guard": "Same signed terms, parties, currency, amount and provider eligibility; immutable destination version; operation intent committed.",
+        "events": [
+          "deal.transitioned",
+          "settlement.created"
+        ]
+      },
+      {
+        "id": "D021",
+        "source": "SETTLEMENT_PENDING",
+        "target": "ESCROW_PENDING",
+        "actor": "settlement adapter worker",
+        "permission": "escrow.create.confirm",
+        "guard": "Provider confirms escrow setup and participant verification; funding instructions scoped to this provider settlement.",
+        "events": [
+          "deal.transitioned",
+          "settlement.funding_pending"
+        ]
+      },
+      {
+        "id": "D022",
+        "source": "ESCROW_PENDING",
+        "target": "ESCROW_FUNDED",
+        "actor": "settlement adapter worker",
+        "permission": "escrow.funding.confirm",
+        "guard": "Authenticated authoritative provider confirms required settled funding amount/currency; no risk hold or unresolved mismatch.",
+        "events": [
+          "deal.transitioned",
+          "escrow.funded"
+        ]
+      },
+      {
+        "id": "D023",
+        "source": "ESCROW_FUNDED",
+        "target": "ASSET_TRANSFER",
+        "actor": "transfer coordinator",
+        "permission": "transfer.start",
+        "guard": "Funded authoritative escrow, signed agreement and versioned transfer plan; live compliance allows transfer.",
+        "events": [
+          "deal.transitioned",
+          "asset_transfer.started"
+        ]
+      },
+      {
+        "id": "D024",
+        "source": "ASSET_TRANSFER",
+        "target": "INSPECTION",
+        "actor": "transfer coordinator",
+        "permission": "transfer.submit",
+        "guard": "Mandatory transfer items submitted with evidence; recipient can inspect; deadlines derived from agreement.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D025",
+        "source": "INSPECTION",
+        "target": "ASSET_TRANSFER",
+        "actor": "buyer inspector",
+        "permission": "transfer.request_correction",
+        "guard": "Specific failed/missing items and evidence; no release request in flight.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D026",
+        "source": "INSPECTION",
+        "target": "RELEASE_PENDING",
+        "actor": "authorized release approvers",
+        "permission": "settlement.release.request",
+        "guard": "Required transfer items confirmed, buyer inspection accepted or contract/provider-authorized timeout decision; two-person approval where policy requires; destination unchanged; no hold.",
+        "events": [
+          "deal.transitioned",
+          "asset_transfer.completed",
+          "settlement.release_requested"
+        ]
+      },
+      {
+        "id": "D027",
+        "source": "RELEASE_PENDING",
+        "target": "SETTLED",
+        "actor": "settlement adapter worker",
+        "permission": "settlement.release.confirm",
+        "guard": "Authoritative provider confirms final release; all milestone amounts and journal totals reconcile; no pending fund liability.",
+        "events": [
+          "deal.transitioned",
+          "settlement.released"
+        ]
+      },
+      {
+        "id": "D028",
+        "source": "SETTLED",
+        "target": "CLOSED",
+        "actor": "completion coordinator",
+        "permission": "deal.close",
+        "guard": "All mandatory transfer/inspection/support-at-close obligations fulfilled; executed records retained; reconciled final funds; no unresolved dispute; portfolio projection scheduled.",
+        "events": [
+          "deal.transitioned",
+          "deal.completed"
+        ]
+      },
+      {
+        "id": "D029",
+        "source": "INQUIRY",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D030",
+        "source": "INQUIRY",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D031",
+        "source": "INQUIRY",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D032",
+        "source": "ACCESS_REQUESTED",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned",
+          "access.rejected"
+        ]
+      },
+      {
+        "id": "D033",
+        "source": "ACCESS_REQUESTED",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D034",
+        "source": "ACCESS_REQUESTED",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D035",
+        "source": "ACCESS_APPROVED",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D036",
+        "source": "ACCESS_APPROVED",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D037",
+        "source": "ACCESS_APPROVED",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D038",
+        "source": "NDA_REQUIRED",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D039",
+        "source": "NDA_REQUIRED",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D040",
+        "source": "NDA_REQUIRED",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D041",
+        "source": "NDA_SIGNED",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D042",
+        "source": "NDA_SIGNED",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D043",
+        "source": "NDA_SIGNED",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D044",
+        "source": "DISCUSSION",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D045",
+        "source": "DISCUSSION",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D046",
+        "source": "DISCUSSION",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D047",
+        "source": "OFFER_SUBMITTED",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D048",
+        "source": "OFFER_SUBMITTED",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D049",
+        "source": "OFFER_SUBMITTED",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D050",
+        "source": "NEGOTIATION",
+        "target": "REJECTED",
+        "actor": "receiving counterparty",
+        "permission": "deal.reject",
+        "guard": "Reason recorded; no accepted/binding obligations, no funds; terminating deal is distinct from rejecting one offer.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D051",
+        "source": "NEGOTIATION",
+        "target": "WITHDRAWN",
+        "actor": "initiating counterparty",
+        "permission": "deal.withdraw",
+        "guard": "No accepted/binding obligations or funds; revoke scoped invitations and access as policy requires.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D052",
+        "source": "NEGOTIATION",
+        "target": "EXPIRED",
+        "actor": "expiry worker",
+        "permission": "deal.expire",
+        "guard": "Versioned inactivity/deadline policy reached; no accepted/binding obligations, funds, or pending signature; race check under lock.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D053",
+        "source": "OFFER_ACCEPTED",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D054",
+        "source": "LOI_PENDING",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D055",
+        "source": "LOI_SIGNED",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D056",
+        "source": "DUE_DILIGENCE",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D057",
+        "source": "AGREEMENT_PENDING",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D058",
+        "source": "AGREEMENT_SIGNED",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D059",
+        "source": "SETTLEMENT_PENDING",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D060",
+        "source": "ESCROW_PENDING",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D061",
+        "source": "ESCROW_FUNDED",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D062",
+        "source": "ASSET_TRANSFER",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D063",
+        "source": "INSPECTION",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D064",
+        "source": "RELEASE_PENDING",
+        "target": "CANCELLED",
+        "actor": "both signatories/authorized dispute operations",
+        "permission": "deal.cancel",
+        "guard": "Signed termination or contractual authority; all provider operations known; refund/release obligations reconciled and zero unresolved held funds; rights/transfer disposition settled; no in-flight release race.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D065",
+        "source": "SETTLEMENT_PENDING",
+        "target": "FAILED",
+        "actor": "settlement operations",
+        "permission": "deal.fail",
+        "guard": "Irrecoverable failure documented; provider proves no funded, pending or unknown operation, and binding obligations legally resolved. Transient failures stay pending.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D066",
+        "source": "ESCROW_PENDING",
+        "target": "FAILED",
+        "actor": "settlement operations",
+        "permission": "deal.fail",
+        "guard": "Irrecoverable failure documented; provider proves no funded, pending or unknown operation, and binding obligations legally resolved. Transient failures stay pending.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D067",
+        "source": "OFFER_ACCEPTED",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D068",
+        "source": "LOI_PENDING",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D069",
+        "source": "LOI_SIGNED",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D070",
+        "source": "DUE_DILIGENCE",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D071",
+        "source": "AGREEMENT_PENDING",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D072",
+        "source": "AGREEMENT_SIGNED",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D073",
+        "source": "SETTLEMENT_PENDING",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D074",
+        "source": "ESCROW_PENDING",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D075",
+        "source": "ESCROW_FUNDED",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D076",
+        "source": "ASSET_TRANSFER",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D077",
+        "source": "INSPECTION",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D078",
+        "source": "RELEASE_PENDING",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D079",
+        "source": "SETTLED",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D080",
+        "source": "CLOSED",
+        "target": "DISPUTED",
+        "actor": "counterparty/compliance/provider adapter",
+        "permission": "deal.dispute",
+        "guard": "Material evidenced dispute; create DealDispute with prior state; freeze controllable release immediately, reconcile any already executed provider action.",
+        "events": [
+          "deal.transitioned",
+          "deal.disputed"
+        ]
+      },
+      {
+        "id": "D081",
+        "source": "DISPUTED",
+        "target": "OFFER_ACCEPTED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D082",
+        "source": "DISPUTED",
+        "target": "LOI_PENDING",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D083",
+        "source": "DISPUTED",
+        "target": "LOI_SIGNED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D084",
+        "source": "DISPUTED",
+        "target": "DUE_DILIGENCE",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D085",
+        "source": "DISPUTED",
+        "target": "AGREEMENT_PENDING",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D086",
+        "source": "DISPUTED",
+        "target": "AGREEMENT_SIGNED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D087",
+        "source": "DISPUTED",
+        "target": "SETTLEMENT_PENDING",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D088",
+        "source": "DISPUTED",
+        "target": "ESCROW_PENDING",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D089",
+        "source": "DISPUTED",
+        "target": "ESCROW_FUNDED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D090",
+        "source": "DISPUTED",
+        "target": "ASSET_TRANSFER",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D091",
+        "source": "DISPUTED",
+        "target": "INSPECTION",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D092",
+        "source": "DISPUTED",
+        "target": "RELEASE_PENDING",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D093",
+        "source": "DISPUTED",
+        "target": "SETTLED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D094",
+        "source": "DISPUTED",
+        "target": "CLOSED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Approved immutable resolution; target equals saved pre-dispute phase OR reconciled provider outcome legally requires this target; re-evaluate every target prerequisite and rights obligation; dual approval; never re-execute completed financial operations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D095",
+        "source": "DISPUTED",
+        "target": "CANCELLED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Documented termination resolution; funds reconciled/refunded as required; transferred rights resolved; zero unresolved liability.",
+        "events": [
+          "deal.transitioned"
+        ]
+      },
+      {
+        "id": "D096",
+        "source": "DISPUTED",
+        "target": "FAILED",
+        "actor": "authorized dispute operations",
+        "permission": "deal.dispute.resolve",
+        "guard": "Irrecoverable resolution; provider operations final and no stranded funds, assets, or binding obligations.",
+        "events": [
+          "deal.transitioned"
+        ]
+      }
+    ]
+  }
+}

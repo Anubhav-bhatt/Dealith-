@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client"
+  output = "../packages/backend/src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AuditEvent {
+  id String @id @db.Uuid
+  action String
+  occurredAt DateTime @default(now()) @db.Timestamptz(6)
+  requestId String @db.Uuid
+  outbox OutboxEvent[]
+  @@index([occurredAt])
+}
+
+model OutboxEvent {
+  id String @id @db.Uuid
+  auditEventId String @db.Uuid
+  audit AuditEvent @relation(fields: [auditEventId], references: [id], onDelete: Restrict)
+  eventType String
+  envelope Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  leaseUntil DateTime? @db.Timestamptz(6)
+  leaseToken String? @db.Uuid
+  lastEnqueuedAt DateTime? @db.Timestamptz(6)
+  completedAt DateTime? @db.Timestamptz(6)
+  attempts Int @default(0)
+  failures Int @default(0)
+  failedAt DateTime? @db.Timestamptz(6)
+  lastErrorCode String?
+  receipts ConsumerReceipt[]
+  @@index([completedAt, leaseUntil, createdAt])
+}
+
+model ConsumerReceipt {
+  eventId String @db.Uuid
+  consumer String
+  processedAt DateTime @default(now()) @db.Timestamptz(6)
+  event OutboxEvent @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  @@id([eventId, consumer])
+}
+
+// Rebuildable operational projection used to prove transactional consumer effects.
+// It is never authorization, financial state or the authoritative audit record.
+model EventProjection {
+  eventType String @id
+  count Int @default(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}

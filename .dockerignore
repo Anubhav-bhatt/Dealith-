@@ -1,0 +1,14 @@
+.git
+node_modules
+**/node_modules
+.pnpm-store
+**/.next
+**/dist
+**/*.tsbuildinfo
+packages/backend/src/generated
+.env
+.env.*
+!.env.example
+.local
+test-results
+playwright-report

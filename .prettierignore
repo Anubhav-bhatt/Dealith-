@@ -1,0 +1,13 @@
+DEALITH_MASTER_PROJECT_SCOPE.md
+docs/
+pnpm-lock.yaml
+.pnpm-store/
+node_modules/
+.next/
+dist/
+packages/backend/src/generated/
+**/next-env.d.ts
+coverage/
+playwright-report/
+test-results/
+.local/

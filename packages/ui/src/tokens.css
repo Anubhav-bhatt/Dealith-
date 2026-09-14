@@ -1,0 +1,29 @@
+:root {
+  --background: #f8f9fc;
+  --surface: #fff;
+  --surface-elevated: #fff;
+  --foreground: #14243b;
+  --muted-foreground: #536174;
+  --border: #d8e0ec;
+  --primary: #2356a8;
+  --destructive: #a21d2b;
+  --warning: #805200;
+  --success: #17633a;
+  --focus: #3069ca;
+  --space-unit: 4px;
+  --radius-control: 7px;
+  --radius-card: 14px;
+  --font-body: Arial, Helvetica, sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --font-regular: 400;
+  --font-medium: 600;
+  --font-bold: 700;
+  --shadow-card: 0 6px 24px #193c6510;
+  --motion-fast: 160ms;
+  --canvas: var(--background);
+  --ink: var(--foreground);
+  --muted: var(--muted-foreground);
+  --line: var(--border);
+  --brand: var(--primary);
+}
